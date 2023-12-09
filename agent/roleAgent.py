@@ -9,7 +9,7 @@ class RoleAgent:
         self.historys = []    # 历史记录数组
 
     def initialize_role(self, prompt, initial_context=None):
-        self.agent.initialize_agent(processInfo([],prompt,processType.roleInit), initial_context)
+        self.agent.initialize_agent(processInfo(sceneInfo=[], roleInfo=prompt, infoType=processType.roleInit), initial_context)
         
     def get_act_response(self, scene, acts):
         message = processInfo(scene, acts, processType.roleAct)

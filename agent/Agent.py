@@ -16,7 +16,7 @@ class Agent():
     def initialize_agent(self, prompt, initial_context=None): # 使用prompt和可选的初始上下文来初始化智能体
         self.context = [{"role": "system", "content": prompt}]
         if initial_context:
-                self.context.extend(initial_context)
+            self.context.extend(initial_context)
         
         print(self.get_response(""))
 
@@ -64,6 +64,7 @@ class Agent():
     
     def show_context(self):
         print(self.context)
+        
     def export_context(self): # 导出当前的全部上下文深拷贝
         return deepcopy(self.context)
 

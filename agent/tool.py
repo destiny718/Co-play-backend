@@ -3,13 +3,13 @@ from enum import Enum
 from type import ActionType, processType
 import openai
 
-openai.api_key = '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'
+openai.api_key = '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'
     
 action_type_to_str = {
-    ActionType.SPEECH: "言语",
-    ActionType.BEHAVIOR: "行为",
-    ActionType.EXPRESSION: "表情",
-    ActionType.PSYCHOLOGICAL_ACTIVITY: "心理活动"
+    ActionType.SPEECH: "SPEECH",
+    ActionType.BEHAVIOR: "BEHAVIOR",
+    ActionType.EXPRESSION: "EXPRESSION",
+    ActionType.PSYCHOLOGICAL_ACTIVITY: "PSYCHOLOGICAL_ACTIVITY"
 }
     
 def processInfo(sceneInfo, roleInfo, infoType, writerInfo = "default"): # 生成发送给openai的message
@@ -45,7 +45,7 @@ def processInfo(sceneInfo, roleInfo, infoType, writerInfo = "default"): # 生成
         message += f"==={act_json}===\n"
     
     elif infoType == processType.sceneAct: # 场景信息 场景中发生的1次act (rolename,roleact)
-        message = ("你管理的的场景"+ sceneInfo +"中人物" + roleInfo[0] + "做出了如下[]中的行为/神态/语言。" + "["+ roleInfo[1] + "]"
+        message = ("你管理的的场景"+ sceneInfo +"中人物" + roleInfo[0] + "做出了如下[]中的行为/神态/语言。" + "["+ roleInfo[1] + "]。"
          "请你根据上述人物行为和你做管理的场景信息判断人物行为是否改变了场景信息，按照场景信息json格式给出最新的场景信息，如果场景信息没有改变只需返还原本的场景信息json"+sceneInfo+"即可" )
         
     elif infoType == processType.writerAct: # 给出某一场景信息，场景下所有act信息，按照act顺序组织文本
@@ -59,7 +59,7 @@ def processInfo(sceneInfo, roleInfo, infoType, writerInfo = "default"): # 生成
         message += "]"
         message += "请你基于被设定的文字风格和语言要求，合成依据上述场景和人物行为信息构成的故事片段，直接给出合成后的故事片段文本"
         
-    elif infoType == processType.roleInit: # 根据用户给出的初始化建议初始化角色，scenInfo为空
+    elif infoType == processType.roleInit: # 根据用户给出的初始化建议初始化角色，sceneInfo为空
         instructions = instructions = ("你需要扮演一位故事角色，你需要首先根据用户的要求文本创建这个角色的设定信息并在后续对话中扮演这个角色，如果用户没有具体设定要求请你自由发挥补全人物设定。"
          "角色设定信息使用json格式描述，包含基本信息、性格特征、外貌描述、背景故事、当前状态这5项内容.这5项内容下还有更具体的划分，参考示例json"
          "用户给出的设定意见文本在[]中给出，示例的任务信息json在下述内容中给出。如果用户设定信息没有指定的内容你可以直接自己补充完整"
@@ -193,13 +193,3 @@ def get_json(text):
                     pass  # 如果不是有效的JSON，继续查找
     return None  # 如果没有找到有效的JSON，返回None
 
-# # 示例文本
-# text = '一些文字... {"name": "张三", "details": {"age": 30, "email": "zhangsan@example.com"}} 更多文字...'
-
-# # 调用函数
-# json_data = get_json(text)
-
-# if json_data is not None:
-#     print(json_data)
-# else:
-#     print("No valid JSON found.")
