@@ -6,10 +6,12 @@ class ActionType(Enum):
     BEHAVIOR = 2
     EXPRESSION = 3
     PSYCHOLOGICAL_ACTIVITY = 4
+
 class Act:
     def __init__(self, act_type, content):
         self.acttype = act_type
         self.content = content
+        
 class History:
     def __init__(self, traits={}, acts=[]):
         self.traits = traits  # 人物信息，json

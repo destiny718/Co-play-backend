@@ -1,7 +1,7 @@
 import openai
 from copy import deepcopy
 from type import AgentType
-openai.api_key = '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'
+openai.api_key = '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'
     
 class Agent():
     def __init__(self, name, type, model='gpt-4-1106-preview'):
@@ -67,8 +67,3 @@ class Agent():
         
     def export_context(self): # 导出当前的全部上下文深拷贝
         return deepcopy(self.context)
-
-# agent1 = Agent("writer",AgentType.ROLE)
-# agent1.initialize_agent("假设你是一名数据处理专家，请你按照给定格式回答问题，所有回答需要json格式，格式为：{question：'问题', answer:'答案'}")
-# print(agent1.get_response("CSR寄存器是什么"))
-# agent1.show_context()

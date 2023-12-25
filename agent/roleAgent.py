@@ -6,7 +6,8 @@ from type import ActionType, Act, History, AgentType, processType
 class RoleAgent:
     def __init__(self, name):
         self.agent = Agent(name, AgentType.ROLE)    # Agent类的实例
-        self.historys = []    # 历史记录数组
+        self.initial_characters = []                # 角色的初始性格
+        self.historys = []                          # 历史记录数组
 
     def initialize_role(self, prompt, initial_context=None):
         self.agent.initialize_agent(processInfo(sceneInfo=[], roleInfo=prompt, infoType=processType.roleInit), initial_context)

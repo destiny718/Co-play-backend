@@ -2,8 +2,6 @@ import json
 from enum import Enum
 from type import ActionType, processType
 import openai
-
-openai.api_key = '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'
     
 action_type_to_str = {
     ActionType.SPEECH: "SPEECH",
@@ -192,4 +190,5 @@ def get_json(text):
                 except json.JSONDecodeError:
                     pass  # 如果不是有效的JSON，继续查找
     return None  # 如果没有找到有效的JSON，返回None
+
 
