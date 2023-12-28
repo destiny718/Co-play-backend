@@ -37,13 +37,13 @@ class Scene:
         self.info = json.loads(response.choices[0].message.content)
         print(self.info)
 
-    def generate_story(self, roles: list[Role]) -> None:
+    def generate_story(self, roles: list[Role], range:tuple[int, int]) -> None:
         context = []
-        role_info = [(role.info, role.actions) for role in roles]
+        role_info = [role.actions for role in roles[range[0]:range[1]]]
 
-        context.append({"role": "system", "content": f'你需要扮演一位故事作者，在如下场景中发生故事\n{self.info}'})
-        context.append({"role": "system", "content": f'在这个故事中有如下角色，以及做出了如下行为：{role_info}'})
-        context.append({"role": "user", "content": f'请你按照上述情节，创作故事'})
+        context.append({"role": "system", "content": f'你需要扮演一位故事作者，在如下[]中描述的场景中发生故事，场景描述：[{self.info}]\n'})
+        context.append({"role": "system", "content": f'在这个故事中有如下角色，以及做出了如下[]中描述行为：[{role_info}]'})
+        context.append({"role": "user", "content": f'请你按照上述场景描述和发生的人物行为内容，完成这部分的故事文本撰写'})
         response = self.client.chat.completions.create(
             model="gpt-4-1106-preview",
             messages=context,

@@ -36,11 +36,13 @@ class Role:
         self.info = json.loads(response.choices[0].message.content)
         print(self.info)
 
-    def create_actions(self, scene, envir: list):
+    def create_actions(self, scene, envir: list, create_prompt = None):
         context = []
         context.append({"role": "system", "content": f'你需要扮演一位故事角色，角色设定信息由下面的json文件给出\n{self.info}\n你之前的行为由下面的list给出，这个list中每项表示一个时间步下你的行为\n{self.actions}'})
         context.append({"role": "system", "content": f'这是你当前所处的环境：{scene.info}'})
-        context.append({"role": "system", "content": f'这是你周围人的表现：{envir}'})
+        context.append({"role": "system", "content": f'这是当前场景中其他角色及其行为表现，注意PSYCHOLOGICAL_ACTIVITY你是观察不到的：{envir}'})
+        if create_prompt:
+            context.append({"role": "user", "content": f'你需要在不明显违反人物设定的前提下，根据下述[]中的提示信息做出更倾向于提示的行为：[{create_prompt}]'})
         context.append({"role": "user", "content": f'请根据以上信息，模拟你所扮演的角色的行为。行为具体有如下四种：BEHAVIOR、SPEECH、EXPRESSION、PSYCHOLOGICAL_ACTIVITY。请按照下面提供的样例json文件格式，结合你所处的场景和周围人的行为，做出你的行为。注意，你做出的行为类型应当只包括上面四种。因为我想要创作一个富有冲突性的情节，请你表现得更有攻击性和戏剧性一些。\n{action_info_example}'})
         response = self.client.chat.completions.create(
             model="gpt-4-1106-preview",
@@ -49,6 +51,7 @@ class Role:
         )
         self.actions.append(json.loads(response.choices[0].message.content))
         print(self.actions)
+        return json.loads(response.choices[0].message.content)
 
     def print_info(self) -> None:
         print(self.info)

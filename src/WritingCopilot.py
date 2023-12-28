@@ -6,25 +6,70 @@ from Scene import Scene
 from Role import Role
 
 class WritingCopilot:
-    def __init__(self, roles: list[Role], scenes: list[Scene]) -> None:
+    def __init__(self, roles: list[Role], scenes: list[Scene], client) -> None:
         self.roles = roles
         self.scenes = scenes
         self.story = []
+        self.current_env = []
+        self.client = client
 
     def add_role(self, role: Role) -> None:
         self.roles.append(role)
 
     def add_scene(self, scene: Scene) -> None:
         self.scenes.append(scene)
+    
+    def generate_part(self, roles: list[Role], scene: Scene, step_range:tuple[int, int]):
+        self.story.append[scene.generate_story(roles, step_range)]
+    def generate_stories(self, generate_prompt):
+        init = "你是一名专业作家,擅长各种不同的文学体裁和写作风格"
+        if generate_prompt:
+            instruction = f'需要你根据[]中的提示信息中的写作要求，提示信息:[{generate_prompt}],将下述数组提供的一个故事的几部分内容整合为一个完整的故事，数组下标顺序即故事的发展顺序:'
+        response = self.client.chat.completions.create(
+            model="gpt-4-1106-preview",
+            messages=[
+                {"role": "system", "content": f'{init}\n'},
+                {"role": "user", "content": f'{instruction}{self.story}\n'}
+            ]
+        )
+        return json.loads(response.choices[0].message.content)
+    
+    def clear_env(self):
+        self.current_env = []
+        
+    def interact(self, role: Role, scene: Scene, init_interact = None):
+        self.current_env.append((role.info, role.create_actions(scene, self.current_env, init_interact)))       
 
-    def interact(self, role: Role, scene: Scene):
+class WritingProcess:
+    def __init__(self, copilot: WritingCopilot) -> None:
+        self.copilot = copilot
+        self.timestep = 0
+    
+    def show_roles(self):
+        print(self.copilot.roles)
+        return [role.info for role in self.copilot.roles]
+    def show_scenes(self):
+        print(self.copilot.scenes)
+        return [scene.info for scene in self.copilot.scenes]
+    def command(self, cmd, role: Role, scene:Scene, prompt = None):
+        # if cmd == "show":
+        #     self.show_roles()
+        #     self.show_scenes()
+        # elif cmd == "act":
+        #     self.copilot.interact()
+        # elif cmd == "gen":
+        #     print(self.copilot.generate_stories())
+        # elif cmd == "forward":
+        #     self.copilot.generate_part()
+        #     self.timestep += 1
         pass
-
-
+    
+        
 client1 = OpenAI(api_key=openai_key)
 client2 = OpenAI(api_key=openai_key)
 client3 = OpenAI(api_key=openai_key)
-        
+client4 = OpenAI(api_key=openai_key)   
+client5 = OpenAI(api_key=openai_key) 
 info1 = {
     "基本信息": {
         "名字": "李凯尔",
@@ -46,7 +91,6 @@ info1 = {
     "当前状态": {
     }
 }
-
 info2 = {
     "基本信息": {
         "名字": "鲁迪·戈贝尔",
@@ -68,28 +112,56 @@ info2 = {
     "当前状态": {
     }
 }
-
 info3 = {
     "地点": "明尼苏达森林狼的主场Target Center",
     "时间": "一个阴雨天的下午",
-    "氛围": "篮球场内十分喧闹",
-    "听觉": [],
+    "氛围": "篮球场内气氛紧张",
+    "听觉": ["球场内非常喧闹"],
     "视觉": [],
     "嗅觉": []          
 }
-
 role1 = Role(client1, info1)
 role2 = Role(client2, info2)
 scene = Scene(client3, info3)
-
+roles = [role1,role2]
+scenes = [scene]
+writer = WritingCopilot(roles, scenes, client4)
+timestep: int = 0
+count = 0
+while True:
+    command = input("请输入交互命令: ")
+    if command.lower() == 'exit': 
+        print("退出")
+        break
+    if command == "show":
+        print(writer.roles)
+        print(writer.scenes)
+    elif command == "gen":
+        res = writer.generate_stories()
+        print(res)
+    elif command == "round":
+        scene = input("请输入需要调用的场景: ")
+        inscene_roles = []
+        cur_scene = None
+        while count < len(writer.roles):
+            role = input("请输入需要调用的角色: ")
+            for s in writer.scenes:
+                if s.info["地点"] == scene:
+                    cur_scene = s
+                    for r in writer.roles:
+                        if r.info["基本信息"]["名字"] == role:
+                            inscene_roles.append(r)
+                            prompt = input("请输入人物行为提示信息: ")
+                            writer.interact(r, s, prompt)
+                            count+=1
+        writer.generate_part(inscene_roles, cur_scene, (timestep,timestep+1))
+        
 thread1 = threading.Thread(target=role1.init_role)
 thread2 = threading.Thread(target=role2.init_role)
 thread3 = threading.Thread(target=scene.init_scene)
-
 thread1.start()
 thread2.start()
 thread3.start()
-
 thread1.join()
 thread2.join()
 thread3.join()
