@@ -1,0 +1,7 @@
+django==4.1.3
+django-cors-headers
+pytest
+pytest-django
+coverage
+uwsgi
+openai==1.6.1
