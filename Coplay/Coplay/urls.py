@@ -15,7 +15,16 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from agent.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/story/create', post_create_story),
+    path('api/story', get_story),
+    path('api/role/create', post_create_role),
+    path('api/role/update', post_update_role),
+    path('api/scene/create', post_create_scene),
+    path('api/scene/update', post_update_scene),
+    path('api/timestep/create', post_create_timestep),
+    path('api/interaction/create', post_create_interaction)
 ]
