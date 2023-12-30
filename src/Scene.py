@@ -4,7 +4,8 @@ from utils import openai_key, scene_info_example
 from Role import Role
 
 class Scene:
-    def __init__(self, client, init_info=None) -> None:
+    def __init__(self, id, client, init_info=None) -> None:
+        self.id = id
         self.init_info = init_info
         self.info = None
         self.client = client
@@ -37,19 +38,20 @@ class Scene:
         self.info = json.loads(response.choices[0].message.content)
         print(self.info)
 
-    def generate_story(self, roles: list[Role], range:tuple[int, int]) -> None:
+    def generate_story(self, roles: list[Role], range: tuple[int, int]) -> None:
         context = []
-        role_info = [role.actions for role in roles[range[0]:range[1]]]
+        role_info = [role.actions for role in roles[range[0]: range[1]]]
 
-        context.append({"role": "system", "content": f'你需要扮演一位故事作者，在如下[]中描述的场景中发生故事，场景描述：[{self.info}]\n'})
-        context.append({"role": "system", "content": f'在这个故事中有如下角色，以及做出了如下[]中描述行为：[{role_info}]'})
+        context.append({"role": "system", "content": f'你需要扮演一位故事作者，在如下##中描述的场景中发生故事，场景描述：#{self.info}#\n'})
+        context.append({"role": "system", "content": f'在这个故事中有如下角色，以及做出了如下##中描述行为：#{role_info}#'})
         context.append({"role": "user", "content": f'请你按照上述场景描述和发生的人物行为内容，完成这部分的故事文本撰写'})
         response = self.client.chat.completions.create(
             model="gpt-4-1106-preview",
             messages=context,
             response_format={"type": "text"}
         )
-        self.story = json.loads(response.choices[0].message.content)
+        gene_story = response.choices[0].message.content
+        self.story.append(gene_story)
         print(self.story)
 
     def show_info(self) -> None:

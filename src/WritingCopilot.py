@@ -1,3 +1,4 @@
+from typing import Any
 from openai import OpenAI
 import json
 import threading
@@ -6,7 +7,10 @@ from Scene import Scene
 from Role import Role
 
 class WritingCopilot:
-    def __init__(self, roles: list[Role], scenes: list[Scene], client) -> None:
+    def __init__(self, id, title, big_background, roles: list[Role], scenes: list[Scene], client) -> None:
+        self.id = id
+        self.title = title
+        self.big_background = big_background
         self.roles = roles
         self.scenes = scenes
         self.story = []
@@ -21,10 +25,14 @@ class WritingCopilot:
     
     def generate_part(self, roles: list[Role], scene: Scene, step_range:tuple[int, int]):
         self.story.append[scene.generate_story(roles, step_range)]
+
     def generate_stories(self, generate_prompt):
-        init = "你是一名专业作家,擅长各种不同的文学体裁和写作风格"
+        # prompt reference: https://askexperts.ai/
+        init = "你是一名出色的小说家。你将创作出引人入胜的创意故事，能够吸引读者长时间阅读。你可以选择任何类型的小说，如奇幻、浪漫、历史虚构等，但目标是写出具有出色情节、吸引人物和意外高潮的作品。"
         if generate_prompt:
-            instruction = f'需要你根据[]中的提示信息中的写作要求，提示信息:[{generate_prompt}],将下述数组提供的一个故事的几部分内容整合为一个完整的故事，数组下标顺序即故事的发展顺序:'
+            instruction = f'需要你根据##中的提示信息中的写作要求，提示信息:#{generate_prompt}#,将下述数组提供的一个故事的几部分内容整合为一个完整的故事，数组下标顺序即故事的发展顺序:'
+        else:
+            instruction = "需要你将下述数组提供的一个故事的几部分内容整合为一个完整的故事，数组下标顺序即故事的发展顺序:"
         response = self.client.chat.completions.create(
             model="gpt-4-1106-preview",
             messages=[
@@ -41,28 +49,17 @@ class WritingCopilot:
         self.current_env.append((role.info, role.create_actions(scene, self.current_env, init_interact)))       
 
 class WritingProcess:
-    def __init__(self, copilot: WritingCopilot) -> None:
-        self.copilot = copilot
-        self.timestep = 0
+    def __init__(self) -> None:
+        self.copilots: list[WritingCopilot] = []
+
+    def add_copilot(self, copilot: WritingCopilot) -> None:
+        self.copilots.append(copilot)
+
+    def __len__(self) -> int:
+        return len(self.copilots)
     
-    def show_roles(self):
-        print(self.copilot.roles)
-        return [role.info for role in self.copilot.roles]
-    def show_scenes(self):
-        print(self.copilot.scenes)
-        return [scene.info for scene in self.copilot.scenes]
-    def command(self, cmd, role: Role, scene:Scene, prompt = None):
-        # if cmd == "show":
-        #     self.show_roles()
-        #     self.show_scenes()
-        # elif cmd == "act":
-        #     self.copilot.interact()
-        # elif cmd == "gen":
-        #     print(self.copilot.generate_stories())
-        # elif cmd == "forward":
-        #     self.copilot.generate_part()
-        #     self.timestep += 1
-        pass
+    def iter(self) -> list:
+        return [{"id": story.id, "title": story.title} for story in self.copilots]
     
         
 client1 = OpenAI(api_key=openai_key)
@@ -77,19 +74,10 @@ info1 = {
         "性别": "男",
         "职业": "篮球运动员，司职前锋",
     },
-    "性格特征": {
-        "主要性格": ["随遇而安"],
-    },
-    "外貌描述": {
-        "身高": "2.03米",
-        "体重": "100公斤",
-        "眼睛颜色": "黑色",
-    },
-    "背景故事": {
-
-    },
-    "当前状态": {
-    }
+    "性格特征": ["随遇而安"],
+    "外貌描述": [],
+    "背景故事": [],
+    "当前状态": []
 }
 info2 = {
     "基本信息": {
