@@ -115,17 +115,37 @@ roles = [role1,role2]
 scenes = [scene]
 writer = WritingCopilot(roles, scenes, client4)
 timestep: int = 0
+story_flag1 = 0
+story_flag2 = 0
 count = 0
 while True:
     command = input("请输入交互命令: ")
     if command.lower() == 'exit': 
         print("退出")
         break
-    if command == "show":
-        print(writer.roles)
-        print(writer.scenes)
+    elif command == "show":
+        show_type = input("查看类型：")
+        if show_type == "role":
+            for r in writer.roles:
+                print(r.info) 
+        elif show_type == "scene":
+            for s in writer.scenes:
+                print(s.info)
+    elif command == "init":
+        init_type = input("请输入需要初始化的内容类型: ")
+        if init_type == "role":
+            init_info = input("初始化人物提示：") # json or str
+            role_clients.append(OpenAI(api_key=openai_key))
+            roles.append(Role(role_clients[-1], init_info))
+            roles[-1].init_role()
+        elif init_type == "scene":
+            init_info = input("初始化场景提示：")
+            scene_clients.append(OpenAI(api_key=openai_key))
+            scenes.append(Scene(scene_clients[-1], init_info))
+            scenes[-1].init_scene()
     elif command == "gen":
-        res = writer.generate_stories()
+        prompt = input("请输入编写故事的要求提示信息:(如文学体裁或者风格) ")
+        res = writer.generate_stories(prompt)
         print(res)
     elif command == "round":
         scene = input("请输入需要调用的场景: ")
@@ -142,20 +162,22 @@ while True:
                             prompt = input("请输入人物行为提示信息: ")
                             writer.interact(r, s, prompt)
                             count+=1
-        writer.generate_part(inscene_roles, cur_scene, (timestep,timestep+1))
+        count = 0
+        if input("是否需要生成当前时间步故事文本") == "y":
+            writer.generate_part(inscene_roles, cur_scene, (timestep,timestep+1))
         
-thread1 = threading.Thread(target=role1.init_role)
-thread2 = threading.Thread(target=role2.init_role)
-thread3 = threading.Thread(target=scene.init_scene)
-thread1.start()
-thread2.start()
-thread3.start()
-thread1.join()
-thread2.join()
-thread3.join()
+# thread1 = threading.Thread(target=role1.init_role)
+# thread2 = threading.Thread(target=role2.init_role)
+# thread3 = threading.Thread(target=scene.init_scene)
+# thread1.start()
+# thread2.start()
+# thread3.start()
+# thread1.join()
+# thread2.join()
+# thread3.join()
 
-# role1.create_actions(scene, ["鲁迪·戈贝尔因为上一个回合你们在防守中沟通不当而十分愤怒，对你挥拳相向"])
-# role2.create_actions(scene, [{"李凯尔": f'{role1.actions}'}])
-role1.actions.append([{'BEHAVIOR': ['在鲁迪·戈贝尔挥拳的瞬间，迅速后退一步，做好防守姿态，防止被出其不意地袭击'], 'SPEECH': ["高声对鲁迪·戈贝尔说：'你这是在场上求败吗？来吧，看我如何在比赛中教训你！'"], 'EXPRESSION': ['脸上流露出不屑和挑衅的神情，眼神紧盯着鲁迪·戈贝尔'], 'PSYCHOLOGICAL_ACTIVITY': ['感到愤怒和不满，同时也认为需要在场上展示出自己的领袖气质和竞争力']}])
-role2.actions.append([{'BEHAVIOR': ['显得异常激动，急速冲向李凯尔，准备开始一次强有力的身体对抗'], 'SPEECH': ["咆哮道：'你这种挑衅对我没用，看我在场上如何用实力压制你！'"], 'EXPRESSION': ['面容扭曲，眼中闪烁着怒火和挑战的光芒'], 'PSYCHOLOGICAL_ACTIVITY': ['内心燃烧着战斗的渴望，对手的态度更是激起了他想要证明自己的决心']}])
-scene.generate_story([role1, role2])
+# # role1.create_actions(scene, ["鲁迪·戈贝尔因为上一个回合你们在防守中沟通不当而十分愤怒，对你挥拳相向"])
+# # role2.create_actions(scene, [{"李凯尔": f'{role1.actions}'}])
+# role1.actions.append([{'BEHAVIOR': ['在鲁迪·戈贝尔挥拳的瞬间，迅速后退一步，做好防守姿态，防止被出其不意地袭击'], 'SPEECH': ["高声对鲁迪·戈贝尔说：'你这是在场上求败吗？来吧，看我如何在比赛中教训你！'"], 'EXPRESSION': ['脸上流露出不屑和挑衅的神情，眼神紧盯着鲁迪·戈贝尔'], 'PSYCHOLOGICAL_ACTIVITY': ['感到愤怒和不满，同时也认为需要在场上展示出自己的领袖气质和竞争力']}])
+# role2.actions.append([{'BEHAVIOR': ['显得异常激动，急速冲向李凯尔，准备开始一次强有力的身体对抗'], 'SPEECH': ["咆哮道：'你这种挑衅对我没用，看我在场上如何用实力压制你！'"], 'EXPRESSION': ['面容扭曲，眼中闪烁着怒火和挑战的光芒'], 'PSYCHOLOGICAL_ACTIVITY': ['内心燃烧着战斗的渴望，对手的态度更是激起了他想要证明自己的决心']}])
+# scene.generate_story([role1, role2])

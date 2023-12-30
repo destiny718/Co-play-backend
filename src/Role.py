@@ -14,7 +14,7 @@ class Role:
         if self.init_info is not None:
             # 有一些初始化信息
             instructions_1 = "你需要扮演一位故事角色，角色设定信息使用json格式描述，包含name、age、characteristics、preference、otherInformation这5项内容。参考示例json"
-            instructions_2 = "请模仿示例的格式，在不违反已有设定的情况下补全下面这个json的内容，注意不要修改原本已有的内容，示例中所有的键都要出现，不要新添加其他键。"
+            instructions_2 = "请模仿示例的格式，在不违反已有设定的情况下补全下面这个json的内容或者根据下面文本要求生成符合格式的角色设定json数据，注意不要修改原本已有的内容，示例中所有的键都要出现，不要新添加其他键。"
             response = self.client.chat.completions.create(
                 model="gpt-4-1106-preview",
                 messages=[

@@ -1,4 +1,4 @@
-openai_key = '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'
+openai_key = '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'
 
 role_info_example = {
     "name": "Kawhi Leonard",
