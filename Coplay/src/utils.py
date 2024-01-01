@@ -4,7 +4,7 @@ role_info_example = {
     "name": "Kawhi Leonard",
     "age": "31",
     "characteristics": ["Modest"],
-    "preference": ["Basketball", "Golf"],
+    "preferences": ["Basketball", "Golf"],
     "otherInformation": ["a basketball player who plays as a small forward", "has won the FMVP (Finals Most Valuable Player) and DPOY (Defensive Player of the Year) awards twice", "currently plays for the Los Angeles Clippers"]
 }
 
