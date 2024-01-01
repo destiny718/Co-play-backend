@@ -19,18 +19,18 @@ from agent.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/story/create', post_create_story),
-    path('api/story', get_story),
-    path('api/role/create', post_create_role),
-    path('api/role/update', post_update_role),
-    path('api/scene/create', post_create_scene),
-    path('api/scene/update', post_update_scene),
-    path('api/role/communicate', communicate),
-    path('api/timestep/create', create_timestep),
-    path('api/interaction/create', create_interaction),
-    path('api/interaction/update', update_interaction),
-    path('api/interaction/delete', delete_interaction),
-    path('api/interaction/launch', launch_interaction),
-    path('api/story/init', init_story),
-    path('api/story/generate', generate_story)
+    path('story/create', post_create_story),
+    path('story', get_story),
+    path('role/create', post_create_role),
+    path('role/update', post_update_role),
+    path('scene/create', post_create_scene),
+    path('scene/update', post_update_scene),
+    path('role/communicate', communicate),
+    path('timestep/create', create_timestep),
+    path('interaction/create', create_interaction),
+    path('interaction/update', update_interaction),
+    path('interaction/delete', delete_interaction),
+    path('interaction/launch', launch_interaction),
+    path('story/init', init_story),
+    path('story/generate', generate_story)
 ]

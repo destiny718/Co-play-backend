@@ -17,7 +17,7 @@ def post_create_story(req: HttpRequest):
     client = OpenAI(api_key=openai_key) 
     copilot = WritingCopilot(len(run_process_model), title, big_background, [], [], client)
     run_process_model.add_copilot(copilot)
-    return request_success()
+    return request_success({"story_id": copilot.id})
 
 def get_story(req: HttpRequest):
     param = req.GET
