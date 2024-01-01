@@ -142,8 +142,12 @@ def get_interaction(req: HttpRequest):
         if story_copilot.scenes[i].timestep == timestep_id:
             scene: Scene = story_copilot.scenes[i]
             break
-
-    return request_success({"interactions": scene.interactions})
+    
+    interactions = []
+    for interaction in scene.interactions:
+        sender = story_copilot.roles[interaction["sender_id"]]
+        interactions.append({"sender": sender.serialize(), "info": interaction["info"]})
+    return request_success({"interactions": interactions})
 
 def update_interaction(req: HttpRequest):
     body = json.loads(req.body.decode("utf-8"))
@@ -189,7 +193,12 @@ def launch_interaction(req: HttpRequest):
         for role in roles:
             info = role.create_actions(scene, scene.interactions)
             scene.interactions.append({"sender": role.info["name"], "sender_id": role.id, "info": info, "user_set": False})
-    return request_success({"interactions": scene.interactions})
+
+    interactions = []
+    for interaction in scene.interactions:
+        sender = story_copilot.roles[interaction["sender_id"]]
+        interactions.append({"sender": sender.serialize(), "info": interaction["info"]})
+    return request_success({"interactions": interactions})
 
 def init_story(req: HttpRequest):
     body = json.loads(req.body.decode("utf-8"))
