@@ -27,7 +27,7 @@ def get_story(req: HttpRequest):
     except Exception as e:
         pass
 
-    if story_id:
+    if story_id is not None:
         # 返回特定的故事
         story_copilot: WritingCopilot = run_process_model.copilots[story_id]
         return request_success(story_copilot.serialize())
