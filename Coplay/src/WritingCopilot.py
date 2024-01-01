@@ -36,8 +36,8 @@ class WritingCopilot:
                 item = {
                     "id": scene.timestep,
                     "title": scene.title,
-                    "relate_scene": scene.serialize(),
-                    "relate_roles": [role.serialize() for role in roles],
+                    "related_scene": scene.serialize(),
+                    "related_roles": [role.serialize() for role in roles],
                     "interactions": scene.interactions
                 }
                 timesteps.append(item)
