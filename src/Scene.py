@@ -10,6 +10,25 @@ class Scene:
         self.info = None
         self.client = client
         self.story = []
+        self.timestep = None
+        self.related_roles = []
+        self.title = None
+
+        """
+        type: [
+        {
+            "sender": string,
+            "sender_id": int,
+            "info": {
+                "BEHAVIOR": list[string],
+                "SPEECH": list[string],
+                "EXPRESSION": list[string],
+                "PSYCHOLOGICAL_ACTIVITY": list[string]
+            }
+        }
+        ]
+        """
+        self.interactions = []
 
     def init_scene(self) -> None:
         if self.init_info is not None:
@@ -38,12 +57,13 @@ class Scene:
         self.info = json.loads(response.choices[0].message.content)
         print(self.info)
 
-    def generate_story(self, roles: list[Role], range: tuple[int, int]) -> None:
+    def generate_story(self, roles: list[Role]) -> None:
         context = []
-        role_info = [role.actions for role in roles[range[0]: range[1]]]
+        role_info = [role.info for role in roles]
 
-        context.append({"role": "system", "content": f'你需要扮演一位故事作者，在如下##中描述的场景中发生故事，场景描述：#{self.info}#\n'})
-        context.append({"role": "system", "content": f'在这个故事中有如下角色，以及做出了如下##中描述行为：#{role_info}#'})
+        context.append({"role": "system", "content": f'你需要扮演一位故事作者，在如下##中描述的场景中发生故事，场景描述：\n#{self.info}#\n'})
+        context.append({"role": "system", "content": f'在这个故事中有如下角色，他们的性格在下面的##中描述：\n#{role_info}#'})
+        context.append({"role": "system", "content": f'在这个故事中的角色进行了下面这些行为：#{self.interactions}#'})
         context.append({"role": "user", "content": f'请你按照上述场景描述和发生的人物行为内容，完成这部分的故事文本撰写'})
         response = self.client.chat.completions.create(
             model="gpt-4-1106-preview",
@@ -53,6 +73,16 @@ class Scene:
         gene_story = response.choices[0].message.content
         self.story.append(gene_story)
         print(self.story)
+
+    def serialize(self) -> dict:
+        return {
+            "id": self.id,
+            "place": self.info["place"],
+            "time": self.info["time"],
+            "atmosphere": self.info["atmosphere"],
+            "feeling": self.info["feeling"],
+            "otherInformation": self.info["otherInformation"]
+        }
 
     def show_info(self) -> None:
         print(self.info)

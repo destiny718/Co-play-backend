@@ -8,7 +8,9 @@ class Role:
         self.init_info = init_info
         self.info = None
         self.client = client
+
         self.actions = []
+        self.dialog = []
 
     def init_role(self) -> None:
         if self.init_info is not None:
@@ -37,14 +39,13 @@ class Role:
         self.info = json.loads(response.choices[0].message.content)
         print(self.info)
 
-    def create_actions(self, scene, envir: list, create_prompt = None):
+    def create_actions(self, scene, envir: list) -> dict:
         context = []
         context.append({"role": "system", "content": f'你需要扮演一位故事角色，角色设定信息由下面的json文件给出\n{self.info}\n你之前的行为由下面的list给出，这个list中每项表示一个时间步下你的行为\n{self.actions}'})
         context.append({"role": "system", "content": f'这是你当前所处的环境：{scene.info}'})
-        # FIXME: 删掉“注意PSYCHOLOGICAL_ACTIVITY你是观察不到的” 直接在list中把PSYCHOLOGICAL_ACTIVITY的键去掉
-        context.append({"role": "system", "content": f'这是当前场景中其他角色及其行为表现，注意PSYCHOLOGICAL_ACTIVITY你是观察不到的：{envir}'})
-        if create_prompt:
-            context.append({"role": "user", "content": f'你需要在不明显违反人物设定的前提下，根据下述##中的提示信息做出更倾向于提示的行为：#{create_prompt}#'})
+
+        context.append({"role": "system", "content": f'这是当前场景中其他角色及其行为表现，注意PSYCHOLOGICAL_ACTIVITY你是观察不到的：sender键表示动作的发起人，info键中表示具体的动作，请忽视掉其他键的内容{envir}'})
+
         context.append({"role": "user", "content": f'请根据以上信息，模拟你所扮演的角色的行为。行为具体有如下四种：BEHAVIOR、SPEECH、EXPRESSION、PSYCHOLOGICAL_ACTIVITY。请按照下面提供的样例json文件格式，结合你所处的场景和周围人的行为，做出你的行为。注意，你做出的行为类型应当只包括上面四种。因为我想要创作一个富有冲突性的情节，请你表现得更有攻击性和戏剧性一些。\n{action_info_example}'})
         response = self.client.chat.completions.create(
             model="gpt-4-1106-preview",
@@ -54,6 +55,36 @@ class Role:
         self.actions.append(json.loads(response.choices[0].message.content))
         print(self.actions)
         return json.loads(response.choices[0].message.content)
+    
+    def communicate(self, dialog: list) -> list:
+        self.dialog = dialog
+        context = []
+        context.append({"role": "system", "content": f'你需要扮演一位故事角色，角色设定信息由下面的json文件给出\n{self.info}\n你之前的行为由下面的list给出，这个list中每项表示一个时间步下你的行为\n{self.actions}'})
+        context.append({"role": "system", "content": "下面是你与一个旁观者的对话，请根据上下文做出合适的回答"})
+        for item in dialog:
+            if item["sender"] == "user":
+                context.append({"role": "user", "content": f'{item["message"]}'})
+            else:
+                context.append({"role": "assistant", "content": f'{item["message"]}'})
+
+        response = self.client.chat.completions.create(
+            model="gpt-4-1106-preview",
+            messages=context,
+            response_format={"type": "text"}
+        )
+
+        self.dialog.append({"sender": "role", "message": response.choices[0].message.content})
+        return self.dialog
+    
+    def serialize(self) -> dict:
+        return {
+            "id": self.id,
+            "name": self.info["name"],
+            "age": self.info["age"],
+            "characteristics": self.info["characteristics"],
+            "preference": self.info["preference"],
+            "otherInformation": self.info["otherInformation"]
+        }
 
     def print_info(self) -> None:
         print(self.info)

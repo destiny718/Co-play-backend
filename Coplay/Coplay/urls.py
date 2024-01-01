@@ -25,6 +25,12 @@ urlpatterns = [
     path('api/role/update', post_update_role),
     path('api/scene/create', post_create_scene),
     path('api/scene/update', post_update_scene),
-    path('api/timestep/create', post_create_timestep),
-    path('api/interaction/create', post_create_interaction)
+    path('/api/role/communicate', communicate),
+    path('/api/timestep/create', create_timestep),
+    path('/api/interaction/create', create_interaction),
+    path('/api/interaction/update', update_interaction),
+    path('/api/interaction/delete', delete_interaction),
+    path('/api/interaction/launch', launch_interaction),
+    path('/api/story/init', init_story),
+    path('/api/story/generate', generate_story)
 ]

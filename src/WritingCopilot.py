@@ -2,7 +2,7 @@ from typing import Any
 from openai import OpenAI
 import json
 import threading
-from utils import openai_key
+from utils import openai_key, role_info_example, scene_info_example
 from Scene import Scene
 from Role import Role
 
@@ -13,8 +13,9 @@ class WritingCopilot:
         self.big_background = big_background
         self.roles = roles
         self.scenes = scenes
+        self.total_timestep = 0
+
         self.story = []
-        self.current_env = []
         self.client = client
 
     def add_role(self, role: Role) -> None:
@@ -22,9 +23,29 @@ class WritingCopilot:
 
     def add_scene(self, scene: Scene) -> None:
         self.scenes.append(scene)
+
+    def create_timestep(self) -> int:
+        self.total_timestep += 1
+        return self.total_timestep - 1
     
-    def generate_part(self, roles: list[Role], scene: Scene, step_range:tuple[int, int]):
-        self.story.append[scene.generate_story(roles, step_range)]
+    def serialize(self) -> dict:
+        timesteps = []
+        for scene in self.scenes:
+            if scene.timestep is not None:
+                item = {
+                    "id": scene.timestep,
+                    "title": scene.title,
+                    "relate_scene": scene.id,
+                    "relate_roles": scene.related_roles,
+                    "interactions": scene.interactions
+                }
+                timesteps.append(item)
+        return {
+            "title": self.title,
+            "roles": [role.serialize() for role in self.roles],
+            "scenes": [scene.serialize() for scene in self.scenes],
+            "timesteps": timesteps
+        }
 
     def generate_stories(self, generate_prompt):
         # prompt reference: https://askexperts.ai/
@@ -38,146 +59,56 @@ class WritingCopilot:
             messages=[
                 {"role": "system", "content": f'{init}\n'},
                 {"role": "user", "content": f'{instruction}{self.story}\n'}
-            ]
+            ],
+            response_format={"type": "text"}
         )
         return json.loads(response.choices[0].message.content)
     
-    def clear_env(self):
-        self.current_env = []
-        
-    def interact(self, role: Role, scene: Scene, init_interact = None):
-        self.current_env.append((role.info, role.create_actions(scene, self.current_env, init_interact)))       
+    
 
 class WritingProcess:
     def __init__(self) -> None:
         self.copilots: list[WritingCopilot] = []
+        self.client = OpenAI(api_key=openai_key)
 
     def add_copilot(self, copilot: WritingCopilot) -> None:
         self.copilots.append(copilot)
 
+    def init_story(self, info) -> int:
+        init0 = "你是一名出色的小说分析师，对各种小说的结构都很有了解，你非常善于分析小说中的故事和人物"
+        init1 = f'请分析下面这段小说的内容，并给出小说的标题、大背景、主要角色和主要的发生场景。请以json格式返回内容，具体需要有如下的键：title，big_background，roles，scene，其中roles需要返回一个列表，列表中的每一项都与下面这个示例类似，注意示例中所有的键都要出现，不要新添加其他键。\n{role_info_example}\nscene与下面这个示例类似，注意示例中所有的键都要出现，不要新添加其他键。\n{scene_info_example}\n'
+        response = self.client.chat.completions.create(
+            model="gpt-4-1106-preview",
+            messages=[
+                {"role": "system", "content": f'{init0}\n'},
+                {"role": "user", "content": f'{init1}{info}\n'}
+            ],
+            response_format={"type": "json_object"}
+        )
+        story_info = json.loads(response.choices[0].message.content)
+        print(story_info)
+
+        new_client = OpenAI(api_key=openai_key) 
+        copilot = WritingCopilot(id=len(self.copilots), title=story_info["title"], big_background=story_info["big_background"], roles=[], scenes=[], client=new_client)
+        for role in story_info["roles"]:
+            role_agent = Role(len(copilot.roles), OpenAI(api_key=openai_key), role)
+            role_agent.info = role_agent.init_info
+            copilot.add_role(role_agent)
+        scene_agent = Scene(len(copilot.scenes), OpenAI(api_key=openai_key), story_info["scene"])
+        scene_agent.info = scene_agent.init_info
+        copilot.add_scene(scene_agent)
+        self.copilots.append(copilot)
+        return copilot.id
+    
     def __len__(self) -> int:
         return len(self.copilots)
     
     def iter(self) -> list:
         return [{"id": story.id, "title": story.title} for story in self.copilots]
     
-        
-client1 = OpenAI(api_key=openai_key)
-client2 = OpenAI(api_key=openai_key)
-client3 = OpenAI(api_key=openai_key)
-client4 = OpenAI(api_key=openai_key)   
-client5 = OpenAI(api_key=openai_key) 
-info1 = {
-    "基本信息": {
-        "名字": "李凯尔",
-        "年龄": 30,
-        "性别": "男",
-        "职业": "篮球运动员，司职前锋",
-    },
-    "性格特征": ["随遇而安"],
-    "外貌描述": [],
-    "背景故事": [],
-    "当前状态": []
-}
-info2 = {
-    "基本信息": {
-        "名字": "鲁迪·戈贝尔",
-        "年龄": 27,
-        "性别": "男",
-        "职业": "篮球运动员，司职中锋",
-    },
-    "性格特征": {
-        "主要性格": ["易怒", "固执"],
-    },
-    "外貌描述": {
-        "身高": "2.17米",
-        "体重": "120公斤",
-        "眼睛颜色": "黑色",
-    },
-    "背景故事": {
 
-    },
-    "当前状态": {
-    }
-}
-info3 = {
-    "地点": "明尼苏达森林狼的主场Target Center",
-    "时间": "一个阴雨天的下午",
-    "氛围": "篮球场内气氛紧张",
-    "听觉": ["球场内非常喧闹"],
-    "视觉": [],
-    "嗅觉": []          
-}
-role1 = Role(client1, info1)
-role2 = Role(client2, info2)
-scene = Scene(client3, info3)
-roles = [role1,role2]
-scenes = [scene]
-writer = WritingCopilot(roles, scenes, client4)
-timestep: int = 0
-story_flag1 = 0
-story_flag2 = 0
-count = 0
-while True:
-    command = input("请输入交互命令: ")
-    if command.lower() == 'exit': 
-        print("退出")
-        break
-    elif command == "show":
-        show_type = input("查看类型：")
-        if show_type == "role":
-            for r in writer.roles:
-                print(r.info) 
-        elif show_type == "scene":
-            for s in writer.scenes:
-                print(s.info)
-    elif command == "init":
-        init_type = input("请输入需要初始化的内容类型: ")
-        if init_type == "role":
-            init_info = input("初始化人物提示：") # json or str
-            role_clients.append(OpenAI(api_key=openai_key))
-            roles.append(Role(role_clients[-1], init_info))
-            roles[-1].init_role()
-        elif init_type == "scene":
-            init_info = input("初始化场景提示：")
-            scene_clients.append(OpenAI(api_key=openai_key))
-            scenes.append(Scene(scene_clients[-1], init_info))
-            scenes[-1].init_scene()
-    elif command == "gen":
-        prompt = input("请输入编写故事的要求提示信息:(如文学体裁或者风格) ")
-        res = writer.generate_stories(prompt)
-        print(res)
-    elif command == "round":
-        scene = input("请输入需要调用的场景: ")
-        inscene_roles = []
-        cur_scene = None
-        while count < len(writer.roles):
-            role = input("请输入需要调用的角色: ")
-            for s in writer.scenes:
-                if s.info["地点"] == scene:
-                    cur_scene = s
-                    for r in writer.roles:
-                        if r.info["基本信息"]["名字"] == role:
-                            inscene_roles.append(r)
-                            prompt = input("请输入人物行为提示信息: ")
-                            writer.interact(r, s, prompt)
-                            count+=1
-        count = 0
-        if input("是否需要生成当前时间步故事文本") == "y":
-            writer.generate_part(inscene_roles, cur_scene, (timestep,timestep+1))
-        
-# thread1 = threading.Thread(target=role1.init_role)
-# thread2 = threading.Thread(target=role2.init_role)
-# thread3 = threading.Thread(target=scene.init_scene)
-# thread1.start()
-# thread2.start()
-# thread3.start()
-# thread1.join()
-# thread2.join()
-# thread3.join()
-
-# # role1.create_actions(scene, ["鲁迪·戈贝尔因为上一个回合你们在防守中沟通不当而十分愤怒，对你挥拳相向"])
-# # role2.create_actions(scene, [{"李凯尔": f'{role1.actions}'}])
-# role1.actions.append([{'BEHAVIOR': ['在鲁迪·戈贝尔挥拳的瞬间，迅速后退一步，做好防守姿态，防止被出其不意地袭击'], 'SPEECH': ["高声对鲁迪·戈贝尔说：'你这是在场上求败吗？来吧，看我如何在比赛中教训你！'"], 'EXPRESSION': ['脸上流露出不屑和挑衅的神情，眼神紧盯着鲁迪·戈贝尔'], 'PSYCHOLOGICAL_ACTIVITY': ['感到愤怒和不满，同时也认为需要在场上展示出自己的领袖气质和竞争力']}])
-# role2.actions.append([{'BEHAVIOR': ['显得异常激动，急速冲向李凯尔，准备开始一次强有力的身体对抗'], 'SPEECH': ["咆哮道：'你这种挑衅对我没用，看我在场上如何用实力压制你！'"], 'EXPRESSION': ['面容扭曲，眼中闪烁着怒火和挑战的光芒'], 'PSYCHOLOGICAL_ACTIVITY': ['内心燃烧着战斗的渴望，对手的态度更是激起了他想要证明自己的决心']}])
-# scene.generate_story([role1, role2])
+if __name__ == "__main__":
+    # for test
+    text = "在遥远的山区，隐藏着一个古老的村庄，那里住着三个性格截然不同的朋友：小华、小明和小丽。小华是个无忧无虑、总是充满活力的女孩，她对世界充满好奇，喜欢冒险和探索。小明则是个谨慎而内敛的男孩，他总是深思熟虑，是三人中的理性之声。小丽，一个机智而又幽默的女孩，总能用她的聪明才智化解紧张的气氛。一天，他们决定去探索村庄边缘的一座神秘废弃屋。小华兴奋不已，她一直梦想着能在那座老屋里发现未知的秘密。小明则显得有些担心，他担心这座老屋可能隐藏着未知的危险。小丽则带着她的笔记本和相机，准备记录下这次冒险的点点滴滴。当他们走进那座废弃屋时，阳光透过破碎的窗户洒在布满灰尘的地板上。这里的一切都显得古旧而神秘。小华立即开始在房间里四处寻找，好像一位寻宝者。小明则小心翼翼地检查着每个角落，以确保安全。小丽则在用她的相机捕捉这些珍贵的瞬间。他们在屋内发现了一个密室，里面堆满了各种古老的物品和书籍。小华在一堆破旧书本中发现了一本非常古老的日记，那是一位多年前的探险家的日记。小明则注意到墙上悬挂着的一幅地图，它看起来非常的古老和神秘。小丽则被一副古画吸引，画中描绘着一个未知的地点，似乎与地图上标记的位置有关。小华提议根据这些线索去寻找可能隐藏的宝藏。小明则建议他们应该更加谨慎，需要更多的准备和调查。而小丽则在想，这一切是否只是一个巧合，还是真的有什么大秘密等着他们。这时，他们听到了楼上的异响，似乎有什么东西在移动。小华勇敢地提议上楼去看看是什么，小明则坚持要他们一起行动，并提醒大家要小心。小丽则快速地记录下这些发现，并准备随时拍摄即将发生的事情。这个故事到这里暂停，留给你去续写这个充满未知和冒险的故事。"
+    w = WritingProcess()
+    w.init_story(text)
