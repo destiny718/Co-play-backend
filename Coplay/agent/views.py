@@ -23,7 +23,7 @@ def get_story(req: HttpRequest):
     param = req.GET
     story_id = None
     try:
-        story_id = param["id"]
+        story_id = require(param, "story_id", "int", err_msg="story_id缺失或者类型错误")
     except Exception as e:
         pass
 
