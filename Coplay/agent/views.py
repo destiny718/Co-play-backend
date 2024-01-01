@@ -79,7 +79,7 @@ def post_create_scene(req: HttpRequest):
         scene = Scene(len(story_copilot.scenes), client, body)
         scene.init_scene()
     else:
-        scene = Role(len(story_copilot.scenes), client, body)
+        scene = Scene(len(story_copilot.scenes), client, body)
         scene.info = scene.init_info
 
     story_copilot.add_scene(scene)
