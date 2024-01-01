@@ -31,12 +31,13 @@ class WritingCopilot:
     def serialize(self) -> dict:
         timesteps = []
         for scene in self.scenes:
+            roles = [self.roles[i] for i in scene.related_roles]
             if scene.timestep is not None:
                 item = {
                     "id": scene.timestep,
                     "title": scene.title,
-                    "relate_scene": scene.id,
-                    "relate_roles": scene.related_roles,
+                    "relate_scene": scene.serialize(),
+                    "relate_roles": [role.serialize() for role in roles],
                     "interactions": scene.interactions
                 }
                 timesteps.append(item)
