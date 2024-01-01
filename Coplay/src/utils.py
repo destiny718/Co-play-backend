@@ -1,11 +1,15 @@
 openai_key = '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'
 
 role_info_example = {
-    "name": "Kawhi Leonard",
+    "name": "科怀·伦纳德",
     "age": "31",
-    "characteristics": ["Modest"],
-    "preferences": ["Basketball", "Golf"],
-    "otherInformation": ["a basketball player who plays as a small forward", "has won the FMVP (Finals Most Valuable Player) and DPOY (Defensive Player of the Year) awards twice", "currently plays for the Los Angeles Clippers"]
+    "characteristics": ["谦逊"],
+    "preferences": ["篮球", "高尔夫"],
+    "otherInformation": [
+        "一位打小前锋的篮球运动员",
+        "曾两次获得总决赛最有价值球员（FMVP）和最佳防守球员（DPOY）奖项",
+        "目前效力于洛杉矶快船队"
+    ]
 }
 
 scene_info_example = {
