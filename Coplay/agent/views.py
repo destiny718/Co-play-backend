@@ -7,7 +7,7 @@ from src.utils import openai_key
 from src.WritingCopilot import WritingCopilot
 from src.Role import Role
 from src.Scene import Scene
-from models import run_process_model
+from agent.models import run_process_model
 
 # Create your views here.
 def post_create_story(req: HttpRequest):

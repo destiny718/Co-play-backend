@@ -2,9 +2,9 @@ from typing import Any
 from openai import OpenAI
 import json
 import threading
-from utils import openai_key, role_info_example, scene_info_example
-from Scene import Scene
-from Role import Role
+from src.utils import openai_key, role_info_example, scene_info_example
+from src.Scene import Scene
+from src.Role import Role
 
 class WritingCopilot:
     def __init__(self, id, title, big_background, roles: list[Role], scenes: list[Scene], client) -> None:

@@ -1,7 +1,7 @@
 from openai import OpenAI
 import json
-from utils import openai_key, scene_info_example
-from Role import Role
+from src.utils import openai_key, scene_info_example
+from src.Role import Role
 
 class Scene:
     def __init__(self, id, client, init_info=None) -> None:

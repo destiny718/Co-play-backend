@@ -1,6 +1,6 @@
 from openai import OpenAI
 import json
-from utils import openai_key, role_info_example, action_info_example
+from src.utils import openai_key, role_info_example, action_info_example
 
 class Role:
     def __init__(self, id, client, init_info=None) -> None:
