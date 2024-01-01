@@ -82,7 +82,7 @@ class Role:
             "name": self.info["name"],
             "age": self.info["age"],
             "characteristics": self.info["characteristics"],
-            "preference": self.info["preference"],
+            "preferences": self.info["preferences"],
             "otherInformation": self.info["otherInformation"]
         }
 
