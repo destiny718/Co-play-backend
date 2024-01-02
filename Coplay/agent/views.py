@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpRequest, JsonResponse
 from openai import OpenAI
+import time
 import json
 
 from src.utils import openai_key
@@ -223,7 +224,10 @@ def generate_story(req: HttpRequest):
     return request_success({"story": scene.story[-1]})
 
 
-
+## for test
+def test_timeout(req: HttpRequest):
+    time.sleep(100)
+    return request_success()
 
 
 def request_success(data={}):

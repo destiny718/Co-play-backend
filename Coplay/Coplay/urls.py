@@ -32,5 +32,6 @@ urlpatterns = [
     path('interaction/delete', delete_interaction),
     path('interaction/launch', launch_interaction),
     path('story/init', init_story),
-    path('story/generate', generate_story)
+    path('story/generate', generate_story),
+    path('test/timeout', test_timeout)
 ]
