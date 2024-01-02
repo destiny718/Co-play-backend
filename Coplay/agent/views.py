@@ -144,9 +144,9 @@ def get_interaction(req: HttpRequest):
             break
     
     interactions = []
-    for interaction in scene.interactions:
+    for idx, interaction in enumerate(scene.interactions):
         sender = story_copilot.roles[interaction["sender_id"]]
-        interactions.append({"sender": sender.serialize(), "info": interaction["info"]})
+        interactions.append({"sender": sender.serialize(), "info": interaction["info"], "interaction_id": idx})
     return request_success({"interactions": interactions})
 
 def update_interaction(req: HttpRequest):
@@ -199,9 +199,9 @@ def launch_interaction(req: HttpRequest):
             scene.interactions.append({"sender": role.info["name"], "sender_id": role.id, "info": info, "user_set": False})
 
     interactions = []
-    for interaction in scene.interactions:
+    for idx, interaction in enumerate(scene.interactions):
         sender = story_copilot.roles[interaction["sender_id"]]
-        interactions.append({"sender": sender.serialize(), "info": interaction["info"]})
+        interactions.append({"sender": sender.serialize(), "info": interaction["info"], "interaction_id": idx})
     return request_success({"interactions": interactions})
 
 def init_story(req: HttpRequest):
