@@ -5,3 +5,4 @@ pytest-django
 coverage
 uwsgi
 openai==1.6.1
+timeout-decorator
