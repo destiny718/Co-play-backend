@@ -193,6 +193,10 @@ def launch_interaction(req: HttpRequest):
         for role in roles:
             info = role.create_actions(scene, scene.interactions)
             scene.interactions.append({"sender": role.info["name"], "sender_id": role.id, "info": info, "user_set": False})
+    else:
+        for role in roles:
+            info = role.create_actions(scene, scene.interactions)
+            scene.interactions.append({"sender": role.info["name"], "sender_id": role.id, "info": info, "user_set": False})
 
     interactions = []
     for interaction in scene.interactions:
