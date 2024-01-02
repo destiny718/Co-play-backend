@@ -33,9 +33,9 @@ class WritingCopilot:
         for scene in self.scenes:
             roles = [self.roles[i] for i in scene.related_roles]
             interactions = []
-            for interaction in scene.interactions:
+            for idx, interaction in enumerate(scene.interactions):
                 sender = self.roles[interaction["sender_id"]]
-                interactions.append({"sender": sender.serialize(), "info": interaction["info"]})
+                interactions.append({"sender": sender.serialize(), "info": interaction["info"], "interaction_id": idx})
             if scene.timestep is not None:
                 item = {
                     "id": scene.timestep,
