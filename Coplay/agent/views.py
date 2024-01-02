@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpRequest, JsonResponse
+from timeout_decorator import timeout
 from openai import OpenAI
 import json
 
@@ -10,6 +11,7 @@ from src.Scene import Scene
 from agent.models import run_process_model
 
 # Create your views here.
+@timeout(300)
 def post_create_story(req: HttpRequest):
     body = json.loads(req.body.decode("utf-8"))
     title = require(body, "title", "string", err_msg="title缺失或者类型错误")
@@ -19,6 +21,7 @@ def post_create_story(req: HttpRequest):
     run_process_model.add_copilot(copilot)
     return request_success({"story_id": copilot.id})
 
+@timeout(300)
 def get_story(req: HttpRequest):
     param = req.GET
     story_id = None
@@ -36,6 +39,7 @@ def get_story(req: HttpRequest):
         title_list = run_process_model.iter()
         return request_success({"stories": title_list})
 
+@timeout(300)
 def post_create_role(req: HttpRequest):
     body = json.loads(req.body.decode("utf-8"))
     story_id = require(body, "story_id", "int", err_msg="story_id缺失或者类型错误")
@@ -55,6 +59,7 @@ def post_create_role(req: HttpRequest):
     story_copilot.add_role(role)
     return request_success({"id": role.id})
 
+@timeout(300)
 def post_update_role(req: HttpRequest):
     body = json.loads(req.body.decode("utf-8"))
     role_id = require(body, "id", "int", err_msg="id缺失或者类型错误")
@@ -65,7 +70,7 @@ def post_update_role(req: HttpRequest):
     story_copilot.roles[role_id].info = body
     return request_success()
 
-
+@timeout(300)
 def post_create_scene(req: HttpRequest):
     body = json.loads(req.body.decode("utf-8"))
     story_id = require(body, "story_id", "int", err_msg="story_id缺失或者类型错误")
@@ -85,6 +90,7 @@ def post_create_scene(req: HttpRequest):
     story_copilot.add_scene(scene)
     return request_success({"id": scene.id})
 
+@timeout(300)
 def post_update_scene(req: HttpRequest):
     body = json.loads(req.body.decode("utf-8"))
     scene_id = require(body, "id", "int", err_msg="id缺失或者类型错误")
@@ -95,6 +101,7 @@ def post_update_scene(req: HttpRequest):
     story_copilot.scenes[scene_id].info = body
     return request_success()
 
+@timeout(300)
 def communicate(req: HttpRequest):
     body = json.loads(req.body.decode("utf-8"))
     role_id = require(body, "role_id", "int", err_msg="role_id缺失或者类型错误")
@@ -105,6 +112,7 @@ def communicate(req: HttpRequest):
     dialog = role.communicate(body["dialog"])
     return request_success({"dialog": dialog})
 
+@timeout(300)
 def create_timestep(req: HttpRequest):
     body = json.loads(req.body.decode("utf-8"))
     story_id = require(body, "story_id", "int", err_msg="story_id缺失或者类型错误")
@@ -118,6 +126,7 @@ def create_timestep(req: HttpRequest):
     related_scene.title = body["title"]
     return request_success({"timestep_id": timestep_id})
     
+@timeout(300)
 def create_interaction(req: HttpRequest):
     body = json.loads(req.body.decode("utf-8"))
     story_id = require(body, "story_id", "int", err_msg="story_id缺失或者类型错误")
@@ -133,6 +142,7 @@ def create_interaction(req: HttpRequest):
     scene.interactions.append({"sender": role.info["name"], "sender_id": sender_id, "info": body["info"], "user_set": True})
     return request_success({"interaction_id": len(scene.interactions) - 1})
 
+@timeout(300)
 def get_interaction(req: HttpRequest):
     param = req.GET
     story_id = require(param, "story_id", "int", err_msg="story_id缺失或者类型错误")
@@ -149,6 +159,7 @@ def get_interaction(req: HttpRequest):
         interactions.append({"sender": sender.serialize(), "info": interaction["info"]})
     return request_success({"interactions": interactions})
 
+@timeout(300)
 def update_interaction(req: HttpRequest):
     body = json.loads(req.body.decode("utf-8"))
     story_id = require(body, "story_id", "int", err_msg="story_id缺失或者类型错误")
@@ -164,6 +175,7 @@ def update_interaction(req: HttpRequest):
     scene.interactions[interaction_id] = {"sender": role.info["name"], "sender_id": sender_id, "info": body["info"], "user_set": True}
     return request_success()
 
+@timeout(300)
 def delete_interaction(req: HttpRequest):
     body = json.loads(req.body.decode("utf-8"))
     story_id = require(body, "story_id", "int", err_msg="story_id缺失或者类型错误")
@@ -177,6 +189,7 @@ def delete_interaction(req: HttpRequest):
     scene.interactions.pop(interaction_id)
     return request_success()
 
+@timeout(300)
 def launch_interaction(req: HttpRequest):
     body = json.loads(req.body.decode("utf-8"))
     story_id = require(body, "story_id", "int", err_msg="story_id缺失或者类型错误")
@@ -204,11 +217,13 @@ def launch_interaction(req: HttpRequest):
         interactions.append({"sender": sender.serialize(), "info": interaction["info"]})
     return request_success({"interactions": interactions})
 
+@timeout(300)
 def init_story(req: HttpRequest):
     body = json.loads(req.body.decode("utf-8"))
     story_id = run_process_model.init_story(body["info"])
     return request_success({"story_id": story_id})
     
+@timeout(300)
 def generate_story(req: HttpRequest):
     body = json.loads(req.body.decode("utf-8"))
     story_id = require(body, "story_id", "int", err_msg="story_id缺失或者类型错误")
