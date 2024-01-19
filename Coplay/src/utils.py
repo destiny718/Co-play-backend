@@ -1,4 +1,4 @@
-openai_key = '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'
+openai_key = None # Add your key
 
 role_info_example = {
     "name": "科怀·伦纳德",
